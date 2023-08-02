@@ -188,6 +188,7 @@ SELECT * FROM glasses;
 SELECT * FROM sales;
 SELECT * FROM employees;
 SELECT * FROM providers;
+SELECT * FROM costumers;
 
 
 -- DELETE TABLA
