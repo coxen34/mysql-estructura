@@ -8,8 +8,8 @@ SELECT LOWER(nombre) productos,precio FROM producto;
 SELECT nombre, UPPER(SUBSTRING(nombre, 1, 2)) FROM fabricante;
 SELECT nombre,ROUND(precio) FROM producto;
 SELECT nombre,TRUNCATE(precio,0) FROM producto;
-SELECT codigo_fabricante FROM producto WHERE codigo_fabricante IN (SELECT codigo FROM fabricante);
-SELECT distinct(codigo_fabricante) FROM producto WHERE codigo_fabricante IN (SELECT codigo FROM fabricante);
+SELECT fabricante.codigo FROM tienda.fabricante INNER JOIN tienda.producto ON tienda.fabricante.codigo = tienda.producto.codigo_fabricante;
+SELECT DISTINCT fabricante.codigo FROM tienda.fabricante INNER JOIN tienda.producto ON tienda.fabricante.codigo = tienda.producto.codigo_fabricante;
 SELECT nombre FROM fabricante ORDER BY nombre ASC;
 SELECT nombre FROM fabricante ORDER BY nombre DESC;
 SELECT nombre FROM producto ORDER BY nombre ASC,precio DESC;
@@ -48,20 +48,20 @@ SELECT p.apellido1,p.apellido2,p.nombre,d.nombre FROM persona p INNER JOIN profe
 SELECT a.nombre, c.anyo_inicio, c.anyo_fin FROM alumno_se_matricula_asignatura am INNER JOIN asignatura a ON am.id_asignatura = a.id INNER JOIN curso_escolar c ON am.id_curso_escolar = c.id INNER JOIN persona p ON am.id_alumno = p.id WHERE p.nif = '26902806M';
 SELECT DISTINCT d.nombre AS nombre_departamento FROM departamento d INNER JOIN profesor p ON d.id = p.id_departamento INNER JOIN asignatura a ON p.id_profesor = a.id_profesor INNER JOIN grado g ON a.id_grado = g.id WHERE g.nombre = 'Grado en Ingeniería Informática (Plan 2015)';
 SELECT DISTINCT p.nombre FROM persona p INNER JOIN alumno_se_matricula_asignatura am ON p.id=am.id_alumno INNER JOIN curso_escolar ce ON am.id_curso_escolar=ce.id WHERE ce.anyo_inicio=2018 AND ce.anyo_fin=2019;
-SELECT d.nombre AS nombre_departamento , p.apellido1, p.apellido2, p.nombre FROM persona p LEFT JOIN departamento d ON p.id = d.id LEFT JOIN profesor pr ON p.id = pr.id_profesor ORDER BY d.nombre, p.apellido1, p.apellido2, p.nombre;
-SELECT p.nombre FROM persona p LEFT JOIN profesor pr ON p.id = pr.id_departamento LEFT JOIN departamento d ON pr.id_departamento = d.id WHERE d.nombre IS NULL ;
+SELECT d.nombre AS nombre_departamento, p.apellido1 , p.apellido2 , p.nombre FROM profesor pr LEFT JOIN departamento d ON pr.id_departamento = d.id LEFT JOIN persona p ON pr.id_profesor = p.id ORDER BY nombre_departamento, apellido1, apellido2, p.nombre;
+SELECT p.nombre AS nombre_profesor, p.apellido1 , p.apellido2 FROM profesor pr RIGHT JOIN persona p ON pr.id_profesor = p.id WHERE pr.id_departamento IS NULL;
 SELECT d.nombre FROM departamento d LEFT JOIN profesor pr  ON d.id= pr.id_departamento WHERE pr.id_profesor IS NULL ;
-SELECT p.nombre FROM persona p LEFT JOIN profesor pr ON p.id = pr.id_profesor LEFT JOIN asignatura a ON pr.id_profesor = a.id_profesor WHERE a.id_profesor IS NULL OR pr.id_profesor IS NULL;
+SELECT apellido1, apellido2, persona.nombre FROM profesor left JOIN persona ON profesor.id_profesor = persona.id LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor WHERE asignatura.id_profesor IS NULL;
 SELECT a.nombre,a.id FROM asignatura a LEFT JOIN persona p ON a.id_profesor=p.id WHERE a.id_profesor IS NULL;
 SELECT d.nombre FROM departamento d LEFT JOIN profesor pr  ON d.id=pr.id_departamento WHERE pr.id_departamento IS NULL;
 SELECT COUNT(p.nombre)FROM persona p WHERE p.tipo LIKE('alumno');
 SELECT COUNT(p.nombre)FROM persona p WHERE p.tipo =('alumno') AND YEAR(p.fecha_nacimiento)=1999;
 SELECT d.nombre AS nom_departament, COUNT(pr.id_profesor) AS nombre_professors FROM departamento d INNER JOIN profesor pr ON d.id = pr.id_departamento INNER JOIN persona p ON d.id = p.id GROUP BY d.id, d.nombre ORDER BY nombre_professors DESC, p.nombre DESC;
 SELECT d.nombre AS nom_departament,COUNT(pr.id_profesor) AS nombre_professors FROM departamento d LEFT JOIN profesor pr ON d.id=pr.id_departamento GROUP BY d.id;
-SELECT g.nombre AS nombre_grado, a.nombre FROM grado g LEFT JOIN asignatura a ON g.id=a.id_grado GROUP BY g.id,a.nombre ORDER BY a.nombre DESC;
-SELECT g.nombre AS nombre_grado,COUNT(a.id)FROM grado g LEFT JOIN asignatura a ON g.id=a.id_grado WHERE COUNT(a.id)=(SELECT COUNT(a.id)FROM asignatura a WHERE COUNT(a.id) >40);
---
---
---
+SELECT g.nombre AS nombre_grado, COUNT(a.id) AS num_asignaturas FROM grado g LEFT JOIN asignatura a ON g.id = a.id_grado GROUP BY g.nombre ORDER BY num_asignaturas DESC;
+SELECT grado.nombre AS nombre_grado, COUNT(asignatura.id) AS num_asignaturas FROM grado LEFT JOIN asignatura ON grado.id = asignatura.id_grado GROUP BY grado.nombre HAVING COUNT(asignatura.id) > 40 ;
+SELECT g.nombre AS nombre_grado, a.tipo, SUM(a.creditos) AS suma_de_creditos FROM grado g INNER JOIN asignatura a ON g.id = a.id_grado GROUP BY g.nombre, a.tipo;
+SELECT ce.anyo_inicio AS año_inicio_curso,COUNT(AM.id_alumno) AS numero_d_alumnes_matriculats FROM curso_escolar ce LEFT JOIN alumno_se_matricula_asignatura am ON ce.id = am.id_curso_escolar GROUP BY ce.anyo_inicio;
+SELECT profesor.id_profesor, persona.nombre, apellido1, apellido2, COUNT(asignatura.id) AS num_asig_impartidas FROM profesor INNER JOIN persona ON profesor.id_profesor = persona.id LEFT JOIN asignatura ON profesor.id_profesor = asignatura.id_profesor GROUP BY profesor.id_profesor ORDER BY num_asig_impartidas DESC;
 SELECT * FROM persona p WHERE tipo LIKE('alumno') ORDER BY TIMESTAMPDIFF(YEAR, fecha_nacimiento, CURDATE()) ASC LIMIT 1;
---
+SELECT p.nombre AS nombre_profesor, p.apellido1 , p.apellido2 FROM persona p INNER JOIN profesor pr ON p.id = pr.id_profesor LEFT JOIN asignatura a ON pr.id_profesor = a.id_profesor WHERE pr.id_departamento IS NOT NULL AND a.id_profesor IS NULL;
